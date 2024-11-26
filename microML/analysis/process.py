@@ -1,14 +1,15 @@
 import logging
 from typing import Optional
+import joblib
 import pandas as pd
-from scipy.stats import boxcox
+from scipy.stats import boxcox, yeojohnson
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import PowerTransformer, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import RFE, SequentialFeatureSelector
 from sklearn.ensemble import RandomForestRegressor
 from microML.common import feature_engineering
-from microML.settings import TARGETS, N_JOBS
+from microML.settings import TARGETS, N_JOBS, MODEL_TEST_DIR
 
 
 logger = logging.getLogger("root_logger")
@@ -180,12 +181,21 @@ class Process():
             self.remove_nans()
         self.remove_outliers(target=self.target, extreme_left=0.99, extreme_right=0.99)
 
-        self.data[self.target], lmbda = boxcox(self.data[self.target], lmbda=None)
-        logger.info(f"Box-Cox lambda for {self.target}: {lmbda}")
+        # self.data[self.target], lmbda = boxcox(self.data[self.target], lmbda=None)
+        # logger.info(f"Box-Cox lambda for {self.target}: {lmbda}")
+
+        # self.data[self.target], lmbda = yeojohnson(self.data[self.target], lmbda=None)
+        # logger.info(f"Yeo-Johnson lambda for {self.target}: {lmbda}")
+
+        # target_transformer = PowerTransformer(method="yeo-johnson", standardize=False)
+        # tv = self.data[self.target].values.reshape((len(self.data[self.target]), 1))
+        # self.data[self.target] = target_transformer.fit_transform(tv)
+        # joblib.dump(target_transformer, f"{MODEL_TEST_DIR}{self.target}_transformer.joblib") 
+        # logger.info(f"Yeo-Johnson lambda for {self.target}: {target_transformer.lambdas_}")
 
         if scale_features:
             self.scale(include_traget=False)
-        return lmbda
+        return
 
     def feature_selection_rfe(self, n_features: int = 5) -> list[str]:
         """

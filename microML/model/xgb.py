@@ -29,7 +29,7 @@ matplotlib.rc('font', family=FONT)
 matplotlib.rcParams["agg.path.chunksize"] = 10000
 
 
-class Sklearn(ML):
+class XGB(ML):
 
     def __init__(self,
                  features: list[str],
@@ -72,80 +72,24 @@ class Sklearn(ML):
         logger.info("Score (%s): %4.4f +/- %4.4f" % (scoringMetric, scores.mean(), scores.std()))
         return scores, estimators, fit_times, score_times
 
-    def linear_expression(self, coefs_mean, coefs_std, intercept_mean, intercept_std):
+    def fit(self, plot_importance=True):
         """
-        Express the trained linear model in form an equation.
+        Construct an xgoost regression model.
         """
-        if len(self.features) != len(coefs_mean):
-            msg = "Number of features does not match with the number of fit coefficients."
-            logger.error(msg)
-            raise ValueError(msg)
+        self.model = xgb.XGBRegressor(n_estimators=200,
+                                      earl_stopping_rounds=50,
+                                      learning_rate=0.001
+                                      )
 
-        sortIndeces = np.argsort(-np.abs(coefs_mean))
-        coefs_mean = [coefs_mean[i] for i in sortIndeces]
-        coefs_std = [coefs_std[i] for i in sortIndeces]
-        features = [self.features[i] for i in sortIndeces]
+        self.model.fit(self.X_train,
+                       self.y_train,
+                       eval_set=[(self.X_train, self.y_train), (self.X_test, self.y_test)],
+                       verbose=True
+                       )
+        
+        
+        self.evaluation_plot(dir_path=MODEL_TEST_DIR)
 
-        expression = self.target + " = "
-        std = "std terms = "
-        for i in range(len(features)):
-            expression += " %+ 2.2f %s" % (coefs_mean[i], features[i])
-            std += " %+ 2.2f%s" % (coefs_std[i], features[i])
-        expression += " %+ 2.2f" % intercept_mean
-        std += " %+2.2f" % intercept_std
-        return expression, std
-
-    def linear_regression(self, **kwargs):
-        """
-        Construct a linear regression model.
-        """
-        logger.info(f"Linear model for {self.target}")
-        self.model = LinearRegression(fit_intercept=True, n_jobs=N_JOBS)
-        scores, estimators, fit_times, score_times = self.score_model(self.model,
-                                                                      self.X,
-                                                                      self.y,
-                                                                      scoringMetric="neg_mean_squared_error",
-                                                                      n_folds=10)
-        self.model.fit(self.X, self.y)
-        logger.info("Model coefficients:")
-        for ind, estimator in enumerate(estimators):
-            if ind == 0:
-                coefs, inters = estimator.coef_, estimator.intercept_
-            else:
-                coefs = np.vstack((coefs, estimator.coef_))
-                inters = np.vstack((inters, estimator.intercept_))
-        coefs_mean = np.mean(coefs, axis=0)
-        coefs_std = np.std(coefs, axis=0)
-        intercept_mean = np.mean(inters, axis=0)
-        intercept_std = np.std(inters, axis=0)
-        expression, expression_std = self.linear_expression(coefs_mean,
-                                                            coefs_std,
-                                                            intercept_mean,
-                                                            intercept_std)
-        print("*****************************")
-        print(expression)
-        print(expression_std)
-        print("*****************************")
-        return self.model
-
-    def ensemble(self, model_name, plot_importance=True):
-        """
-        Construct an ensemble (random forest (rf), extra trees regressor(extra), gradient boost (gb)) model.
-        """
-        print(f"******* {model_name} Model for {self.target} *******")
-        if model_name.lower() == "rf":
-            self.model = RandomForestRegressor(200, max_features="sqrt", n_jobs=N_JOBS, min_samples_split=20)
-        elif model_name.lower() == "extra":
-            self.model = ExtraTreesRegressor(200, max_features=None, n_jobs=N_JOBS, min_samples_split=4, max_depth=50)
-        elif model_name.lower() == "gb":
-            self.model = GradientBoostingRegressor(n_estimators=200, learning_rate=0.01, loss="huber")  # {'huber', 'squared_error', 'absolute_error', 'quantile'}
-        scores, estimators, fit_times, score_times = self.score_model(self.model,
-                                                                      self.X,
-                                                                      self.y,
-                                                                      scoringMetric="neg_mean_squared_error",
-                                                                      n_folds=10)
-        self.model.fit(self.X_train, self.y_train)
-        self.evaluation_plot(dir_path=MODEL_TEST_DIR, model_name=model_name)
         if plot_importance:
             print('Plotting Feature Importances ... ')
             sorted_features, sorted_scores = self.RF_feature_importance_MDA(self.model, self.features, self.X, self.y)
@@ -162,7 +106,7 @@ class Sklearn(ML):
         y_pred = self.model.predict(x)
         return y_pred
 
-    def evaluation_plot(self, dir_path: str, model_name: str) -> float:
+    def evaluation_plot(self, dir_path: str) -> float:
         """
         Evaluate the trained model on the test set.
         Create a plot comparing the predictions and actual data.
@@ -199,7 +143,7 @@ class Sklearn(ML):
         plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
         plt.gca().tick_params(axis="both", which="both", direction="in", top=True, right=True, labeltop=False, labelright=False)
         plt.tight_layout()
-        plt.savefig(f"{dir_path}{self.target}_{model_name}_eval.png", dpi=300)
+        plt.savefig(f"{dir_path}{self.target}_xgb_eval.png", dpi=300)
         return y_pred, pred_loss
 
 
@@ -242,10 +186,10 @@ class Sklearn(ML):
         plt.clf()
         plt.plot(sorted_features, sorted_scores, 'o')
         plt.xticks(sorted_features, sorted_features, rotation=90)
-        plt.ylabel('Relative Importance (%s)' % method)
+        plt.ylabel("Relative Importance ({method})")
         plt.title(target)
         plt.tight_layout()
-        plt.savefig('%simportance_%s_%s.png' % (FIGURE_DIR, target, method))
+        plt.savefig(f"{FIGURE_DIR}xgb_importance_{target}_{method}.png")
         # plt.show()
         plt.close()
         return

@@ -35,13 +35,14 @@ PICO = "picoeukaryote_abundance"                        # A consistent label for
 HETB = "heterotrophic_bacteria_abundance"               # A consistent label for all "heterotrophic bacteria abundance" related observations.                    
 TARGETS = [PROC, SYNC, PICO, HETB]
 
+##################### Visualization ######################
+FONT = "Arial"
+
 #################### Machine Learning ####################
 N_JOBS = -1
 EPOCHS = 200
 VERBOSE_FIT = 1
 VALIDATION_SPLIT = 0.1
-
-
 layers = [
           {"type": "dense", "units": 256, "activation": "relu"},
           {"type": "dropout", "drop": 0.2},
@@ -52,10 +53,9 @@ layers = [
           {"type": "dense", "units": 256, "activation": "relu"},
           {"type": "dropout", "drop": 0.2}
          ]
-
 DEFAULT_NN_HYPER_PARAMS = {"features": None,
                            "layers": layers,
-                           "epoch": 500,
+                           "epoch": 3000,
                            "batch": 64,
                            "learning": 0.001,
                            "optimizer": "Adam",

@@ -15,13 +15,13 @@ from matplotlib.ticker import AutoMinorLocator
 from sklearn.metrics import r2_score
 import tensorflow as tf
 from microML.common import pretty_target
-from microML.settings import MODEL_TEST_DIR, VERBOSE_FIT, VALIDATION_SPLIT, DEFAULT_NN_HYPER_PARAMS
+from microML.settings import MODEL_TEST_DIR, VERBOSE_FIT, VALIDATION_SPLIT, DEFAULT_NN_HYPER_PARAMS, FONT
 from microML.model.ml import ML
 
 
 logger = logging.getLogger("root_logger")
 matplotlib.use('Agg')
-matplotlib.rc('font', family="Helvetica")
+matplotlib.rc('font', family=FONT)
 matplotlib.rcParams["agg.path.chunksize"] = 10000
 
 

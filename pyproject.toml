@@ -25,6 +25,8 @@ dependencies = [
     "colorama",
     "sweetviz",
     "seaborn",
+    "xgboost",
+    "optuna",
     "pytorch_tabular[extra]"
 ]
 classifiers = [

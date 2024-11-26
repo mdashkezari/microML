@@ -8,6 +8,7 @@ import os
 from typing import Optional
 import numpy as np
 import pandas as pd
+from scipy.special import inv_boxcox
 import joblib
 from tqdm.auto import tqdm
 import logging
@@ -18,13 +19,13 @@ from sklearn.metrics import r2_score
 import torch
 from torch import nn
 from microML.common import pretty_target
-from microML.settings import MODEL_TEST_DIR, VERBOSE_FIT, VALIDATION_SPLIT, DEFAULT_NN_HYPER_PARAMS
+from microML.settings import MODEL_TEST_DIR, VERBOSE_FIT, VALIDATION_SPLIT, DEFAULT_NN_HYPER_PARAMS, FONT
 from microML.model.ml import ML
 
 
 logger = logging.getLogger("root_logger")
 matplotlib.use('Agg')
-matplotlib.rc('font', family="Helvetica")
+matplotlib.rc('font', family=FONT)
 matplotlib.rcParams["agg.path.chunksize"] = 10000
 
 
@@ -42,24 +43,25 @@ class TorchModel(nn.Module):
         self.dropout1 = nn.Dropout(p=0.2)
         self.layer2 = nn.Linear(in_features=256, out_features=256)
         self.dropout2 = nn.Dropout(p=0.2)
-        self.layer3 = nn.Linear(in_features=256, out_features=256)
+        self.layer3 = nn.Linear(in_features=256, out_features=512)
         self.dropout3 = nn.Dropout(p=0.2)
-        self.layer4 = nn.Linear(in_features=256, out_features=256)
+        self.layer4 = nn.Linear(in_features=512, out_features=512)
         self.dropout4 = nn.Dropout(p=0.2)
-        self.output_layer = nn.Linear(in_features=256, out_features=1)
-        self.relu = nn.ReLU()
+        self.output_layer = nn.Linear(in_features=512, out_features=1)
+        self.activation = nn.ReLU()
         return
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.relu(self.layer1(x))
+        x = self.activation(self.layer1(x))
         x = self.dropout1(x)
-        x = self.relu(self.layer2(x))
+        x = self.activation(self.layer2(x))
         x = self.dropout2(x)
-        x = self.relu(self.layer3(x))
+        x = self.activation(self.layer3(x))
         x = self.dropout3(x)
-        x = self.relu(self.layer4(x))
+        x = self.activation(self.layer4(x))
         x = self.dropout4(x)
-        x = self.relu(self.output_layer(x))  # Apply relu to make sure the output (abundance) is positive
+        # x = self.activation(self.output_layer(x)) 
+        x = self.output_layer(x)
         return x
 
 
@@ -100,7 +102,8 @@ class PyTorch(ML):
 
     def get_loss_fn(self):
         return {"mae": nn.L1Loss(),
-                "mse": nn.MSELoss()
+                "mse": nn.MSELoss(),
+                "huber": nn.HuberLoss(),
                 }[self.hp["loss"].lower()]
 
     def fit(self, dir_path=MODEL_TEST_DIR) -> dict:
@@ -191,9 +194,17 @@ class PyTorch(ML):
         """
         y_pred = torch.squeeze(self.predict(self.X_test))
         pred_loss = self.loss_fn(y_pred, self.y_test)
-
         y_pred = y_pred.cpu().numpy()
         y_test = self.y_test.cpu().numpy()
+
+        # y_test = inv_boxcox(y_test, -0.08521151768826253)
+        # y_pred = inv_boxcox(y_pred, -0.08521151768826253)
+
+        # target_transformer = joblib.load(f"{MODEL_TEST_DIR}{self.target}_transformer.joblib")
+        # y_test = np.squeeze(target_transformer.inverse_transform(y_test.reshape((len(y_test), 1))))
+        # y_pred = np.squeeze(target_transformer.inverse_transform(y_test.reshape((len(y_pred), 1))))
+
+
         r2 = r2_score(y_test, y_pred)
         linear_coef = np.polyfit(y_test, y_pred, 1)
         linear_func = np.poly1d(linear_coef)

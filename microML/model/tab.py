@@ -21,13 +21,13 @@ from pytorch_tabular.config import (
     TrainerConfig,
 )
 from microML.common import pretty_target
-from microML.settings import MODEL_TEST_DIR, VERBOSE_FIT, VALIDATION_SPLIT
+from microML.settings import MODEL_TEST_DIR, VERBOSE_FIT, VALIDATION_SPLIT, FONT
 from microML.model.ml import ML
 
 
 logger = logging.getLogger("root_logger")
 matplotlib.use('Agg')
-matplotlib.rc('font', family="Helvetica")
+matplotlib.rc('font', family=FONT)
 matplotlib.rcParams["agg.path.chunksize"] = 10000
 
 

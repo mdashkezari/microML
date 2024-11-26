@@ -8,6 +8,7 @@ from microML.model.skl import Sklearn
 from microML.model.tfl import TensorFlow
 from microML.model.pyt import PyTorch
 from microML.model.tab import PyTorchTab
+from microML.model.xgb import XGB
 from microML.analysis.explore import Explore
 from microML.common import surface_and_depth_features, surface_features
 
@@ -64,7 +65,7 @@ class MicroML():
                           filter=filter,
                           holdout=self.holdout
                           )
-        box_cox_lambda = process.run(remove_nans=True, scale_features=False)
+        process.run(remove_nans=True, scale_features=False)
         # create X_train, y_train, X_test, and y_test
         if self.holdout:
             self.model.from_given_testset(train_data=process.data, test_data=process.holdout_data)
@@ -86,8 +87,9 @@ if __name__ == "__main__":
     for target in TARGETS[:1]:
         # model = TensorFlow(features=features, target=target)
         # model = Sklearn(features=features, target=target)
-        model = PyTorch(features=features, target=target)
+        # model = PyTorch(features=features, target=target)
         # model = PyTorchTab(features=features, target=target)
+        model = XGB(features=features, target=target)
         mml = MicroML(model=model,
                       features=features,
                       target=target,
@@ -97,5 +99,5 @@ if __name__ == "__main__":
                       random_state=None
                       )
         # mml.model.linear_regression()
-        # mml.model.ensemble(model_name="rf")
+        # mml.model.ensemble(model_name="extra")
         mml.model.fit()
