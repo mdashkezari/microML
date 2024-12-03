@@ -484,6 +484,8 @@ def surface_and_depth_features(index: int):
     of a multi-stage (round) RFE feature selection algorithm.
     """
     rounds = [
+            #   ['lat', 'lon', 'depth', 'Si'], #, 'Si', 'NH4_darwin_clim', 'NO3_darwin_clim', 'sea_water_temp_WOA_clim'],  # for PROC
+
               ['lat', 'lon', 'depth', 'sea_water_temp_WOA_clim', 'conductivity_WOA_clim', 's_an_clim', 'O2', 'Si', 'CHL', 'PO4', 'NH4_darwin_clim', 'NO3_darwin_clim', 'DIC_darwin_clim', 'NO2_darwin_clim'],
               ['lat', 'lon', 'depth', 'sea_water_temp_WOA_clim', 'DIC_darwin_clim', 'O2', 'CHL', 'Si_2', 'NO2_darwin_clim', 's_an_clim_2', 'N/T', 'N/C', 'N/O', 'N/PO4', 'N/NH4'],
             #   only_climatology()

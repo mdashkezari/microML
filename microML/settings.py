@@ -55,7 +55,7 @@ layers = [
          ]
 DEFAULT_NN_HYPER_PARAMS = {"features": None,
                            "layers": layers,
-                           "epoch": 3000,
+                           "epoch": 3500,
                            "batch": 64,
                            "learning": 0.001,
                            "optimizer": "Adam",

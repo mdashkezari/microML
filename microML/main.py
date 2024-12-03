@@ -84,12 +84,12 @@ if __name__ == "__main__":
     features = surface_features(index=features_index) if surface else surface_and_depth_features(index=features_index)
     holdout = ("SeaFlow_dataset_v1.6", "KOK1606")
     holdout = None
-    for target in TARGETS[:1]:
+    for target in TARGETS[:3]:
         # model = TensorFlow(features=features, target=target)
-        # model = Sklearn(features=features, target=target)
+        model = Sklearn(features=features, target=target)
         # model = PyTorch(features=features, target=target)
         # model = PyTorchTab(features=features, target=target)
-        model = XGB(features=features, target=target)
+        # model = XGB(features=features, target=target)
         mml = MicroML(model=model,
                       features=features,
                       target=target,
@@ -99,5 +99,5 @@ if __name__ == "__main__":
                       random_state=None
                       )
         # mml.model.linear_regression()
-        # mml.model.ensemble(model_name="extra")
-        mml.model.fit()
+        mml.model.ensemble(model_name="extra", plot_importance=False)
+        # mml.model.fit()

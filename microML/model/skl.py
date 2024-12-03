@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from collections import defaultdict
 import xgboost as xgb
-from sklearn.model_selection import train_test_split, cross_validate, KFold, ShuffleSplit
+from sklearn.model_selection import train_test_split, cross_validate, KFold, ShuffleSplit, GridSearchCV
 from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor, AdaBoostRegressor
 from sklearn.metrics import r2_score, mean_squared_error
 from microML.common import pretty_target
 from microML.settings import FIGURE_DIR, N_JOBS, FONT, MODEL_TEST_DIR
@@ -134,24 +134,42 @@ class Sklearn(ML):
         """
         print(f"******* {model_name} Model for {self.target} *******")
         if model_name.lower() == "rf":
-            self.model = RandomForestRegressor(200, max_features="sqrt", n_jobs=N_JOBS, min_samples_split=20)
+            self.model = RandomForestRegressor(200, max_features="sqrt", n_jobs=N_JOBS, min_samples_split=4, max_depth=60)
         elif model_name.lower() == "extra":
-            self.model = ExtraTreesRegressor(200, max_features=None, n_jobs=N_JOBS, min_samples_split=4, max_depth=50)
+            # self.model = ExtraTreesRegressor(n_estimators=200,
+            #                                  criterion= "squared_error",  #{"squared_error", "absolute_error", "friedman_mse", "poisson"}
+            #                                  max_features=None,
+            #                                  min_samples_split=4,
+            #                                  max_depth=50,
+            #                                  n_jobs=N_JOBS,
+            #                                  )
+            self.model = ExtraTreesRegressor(n_estimators=193,
+                                             criterion= "squared_error",
+                                             max_depth=65,
+                                             max_features="sqrt",
+                                             min_samples_split=4,
+                                             min_samples_leaf=1,
+                                             bootstrap=False,
+                                             n_jobs=N_JOBS,
+                                             )
+
+        elif model_name.lower() == "adab":
+            self.model = AdaBoostRegressor(n_estimators=200, learning_rate=1, loss="linear")  # loss: {‘linear’, ‘square’, ‘exponential’}
         elif model_name.lower() == "gb":
             self.model = GradientBoostingRegressor(n_estimators=200, learning_rate=0.01, loss="huber")  # {'huber', 'squared_error', 'absolute_error', 'quantile'}
-        scores, estimators, fit_times, score_times = self.score_model(self.model,
-                                                                      self.X,
-                                                                      self.y,
-                                                                      scoringMetric="neg_mean_squared_error",
-                                                                      n_folds=10)
+        # scores, estimators, fit_times, score_times = self.score_model(self.model,
+        #                                                               self.X,
+        #                                                               self.y,
+        #                                                               scoringMetric="neg_mean_squared_error",
+        #                                                               n_folds=10)
         self.model.fit(self.X_train, self.y_train)
         self.evaluation_plot(dir_path=MODEL_TEST_DIR, model_name=model_name)
         if plot_importance:
             print('Plotting Feature Importances ... ')
             sorted_features, sorted_scores = self.RF_feature_importance_MDA(self.model, self.features, self.X, self.y)
-            self.plot_importance(sorted_features, sorted_scores, self.target, method='MDA')
+            self.plot_importance(sorted_features, sorted_scores, self.target, model_name, method="MDA")
             sorted_features, sorted_scores = self.RF_feature_importance_MDI(self.model, self.features, self.X, self.y)
-            self.plot_importance(sorted_features, sorted_scores, self.target, method='MDI')
+            self.plot_importance(sorted_features, sorted_scores, self.target, model_name, method="MDI")
         return self.model, None
 
 
@@ -233,7 +251,7 @@ class Sklearn(ML):
         return list(list(zip(*zipped))[1]), list(list(zip(*zipped))[0])
 
     @staticmethod
-    def plot_importance(sorted_features, sorted_scores, target, method):
+    def plot_importance(sorted_features, sorted_scores, target, model_name, method):
         """
         Plot feature importances (applicable to decision tree based ensemble models).
         """
@@ -245,7 +263,29 @@ class Sklearn(ML):
         plt.ylabel('Relative Importance (%s)' % method)
         plt.title(target)
         plt.tight_layout()
-        plt.savefig('%simportance_%s_%s.png' % (FIGURE_DIR, target, method))
+        plt.savefig('%s%s_importance_%s_%s.png' % (FIGURE_DIR, model_name, target, method))
         # plt.show()
         plt.close()
         return
+
+    def hyper_param_tune(self):
+        model = ExtraTreesRegressor()
+        param_grid = {"n_estimators": range(170, 200),
+                      "criterion": ["squared_error"],  
+                      "max_depth": list(range(55, 70)),
+                      "max_features": ["auto", "sqrt"],
+                      "min_samples_split": [4],
+                      "min_samples_leaf": [1],
+                      "bootstrap": [False]
+                      }
+        gs = GridSearchCV(estimator=model,
+                          param_grid=param_grid,
+                          cv=3,
+                          scoring="neg_mean_squared_error",
+                          refit=True,
+                          verbose=2,
+                          n_jobs=N_JOBS
+                          )
+        gs.fit(self.X_train, self.y_train)
+        logger.info(f"GridSearch best {self.target} model hyper parameters:\n{gs.best_params_}")
+        return gs.best_params_
