@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from microML.settings import PROC, SYNC, PICO, HETB, TARGETS
+import joblib
+from microML.settings import PROC, SYNC, PICO, HETB, TARGETS, PRODUCTION_DIR
 
 
 def pretty_target(target: str) -> str:
@@ -484,8 +485,7 @@ def surface_and_depth_features(index: int):
     of a multi-stage (round) RFE feature selection algorithm.
     """
     rounds = [
-            #   ['lat', 'lon', 'depth', 'Si'], #, 'Si', 'NH4_darwin_clim', 'NO3_darwin_clim', 'sea_water_temp_WOA_clim'],  # for PROC
-
+            #   ['lon', 'sea_water_temp_WOA_clim', 'Si', 'DIC_darwin_clim', 'NH4_darwin_clim', 'POSi_darwin_clim', 'SiO2_darwin_clim'], #PROC
               ['lat', 'lon', 'depth', 'sea_water_temp_WOA_clim', 'conductivity_WOA_clim', 's_an_clim', 'O2', 'Si', 'CHL', 'PO4', 'NH4_darwin_clim', 'NO3_darwin_clim', 'DIC_darwin_clim', 'NO2_darwin_clim'],
               ['lat', 'lon', 'depth', 'sea_water_temp_WOA_clim', 'DIC_darwin_clim', 'O2', 'CHL', 'Si_2', 'NO2_darwin_clim', 's_an_clim_2', 'N/T', 'N/C', 'N/O', 'N/PO4', 'N/NH4'],
             #   only_climatology()
@@ -549,3 +549,9 @@ def feature_engineering(df: pd.DataFrame, surface: bool):
     df["PO4NH4"] = df["PO4"] * df["NH4_darwin_clim"]
     df["SiNH4"] = df["Si"] * df["NH4_darwin_clim"]
     return df
+
+
+def load_production_model(target):
+    scaler = joblib.load(f"{PRODUCTION_DIR}{target}_scaler.joblib") 
+    model = joblib.load(f"{PRODUCTION_DIR}{target}_extraTreeRegressor.joblib") 
+    return model, scaler

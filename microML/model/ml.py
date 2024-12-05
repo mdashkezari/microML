@@ -4,13 +4,16 @@ Author: Mohammad Dehghani Ashkezari <mdehghan@uw.edu>
 Base ML class to provide train and test datasets.
 """
 
+import os
 import logging
 import numpy as np
 import pandas as pd
 from typing import Optional
+import sklearn
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-
+import joblib
+from microML.settings import PRODUCTION_DIR
 
 logger = logging.getLogger("root_logger")
 
@@ -100,4 +103,11 @@ class ML(object):
         self.X_train = self.scaler.fit_transform(self.X_train)
         self.X_test = self.scaler.transform(self.X_test)
         self.X = self.scaler.transform(self.X)
+        return
+
+    def save(self):
+        os.makedirs(f"{PRODUCTION_DIR}", exist_ok=True)
+        joblib.dump(self.scaler, f"{PRODUCTION_DIR}{self.target}_scaler.joblib") 
+        if isinstance(self.model, sklearn.ensemble._forest.ExtraTreesRegressor):
+            joblib.dump(self.model, f"{PRODUCTION_DIR}{self.target}_extraTreeRegressor.joblib") 
         return

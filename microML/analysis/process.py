@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 import joblib
 import pandas as pd
+import numpy as np
 from scipy.stats import boxcox, yeojohnson
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PowerTransformer, StandardScaler
@@ -60,6 +61,9 @@ class Process():
                 self.data[c] = self.data[c].astype("float")
         if filter:
             self.data = self.data.query(filter)
+
+        # self.data.loc[self.data["lon"] < 180, "lon"] = self.data.loc[self.data["lon"] < 180, "lon"] + 360
+        self.data["lon"] = np.cos(self.data["lon"] * np.pi / 180)
 
         self.data["month"] = self.data["time"].dt.month
         self.data = self.data.drop("time", axis=1, inplace=False)
@@ -209,7 +213,7 @@ class Process():
         X_train, X_test, y_train, y_test = train_test_split(self.data.drop(labels=[self.target], axis=1),
                                                             self.data[self.target],
                                                             test_size=0.2)
-        model = RandomForestRegressor(n_estimators=10, n_jobs=N_JOBS)
+        model = RandomForestRegressor(n_estimators=100, max_features="sqrt", n_jobs=N_JOBS, min_samples_split=4, max_depth=60)
         selector = RFE(model, n_features_to_select=n_features)
         # selector = SequentialFeatureSelector(model,
         #                                      n_features_to_select=n_features,

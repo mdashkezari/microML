@@ -63,16 +63,18 @@ def second_cut_feature_selection(surface: bool):
 
 
 
-
-print("\n\n---------------------- Surface Features ----------------------\n\n")
-surface_feature_dict = second_cut_feature_selection(surface=True)
-print("\n\n---------------------- Surface+Depth Features ----------------------\n\n")
-total_feature_dict = second_cut_feature_selection(surface=False)
+logger.info(f"first cut features: {first_cut_feature_selection()}")
 
 
-print(f"\n\n{'*'*50}  Results  {'*'*50}\n\n")
-print("\nSurface features:")
-print(surface_feature_dict)
-print("\nSurface & Depth features:")
-print(total_feature_dict)
+# print("\n\n---------------------- Surface Features ----------------------\n\n")
+# surface_feature_dict = second_cut_feature_selection(surface=True)
+# print("\n\n---------------------- Surface+Depth Features ----------------------\n\n")
+# total_feature_dict = second_cut_feature_selection(surface=False)
+
+
+# print(f"\n\n{'*'*50}  Results  {'*'*50}\n\n")
+# print("\nSurface features:")
+# print(surface_feature_dict)
+# print("\nSurface & Depth features:")
+# print(total_feature_dict)
 

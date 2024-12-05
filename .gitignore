@@ -21,6 +21,7 @@ manuscriptFigures.py
 playground.py
 *.pptx
 ingest.py
+play.py
 tokens.py
 untrack/
 

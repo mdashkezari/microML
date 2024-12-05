@@ -136,15 +136,8 @@ class Sklearn(ML):
         if model_name.lower() == "rf":
             self.model = RandomForestRegressor(200, max_features="sqrt", n_jobs=N_JOBS, min_samples_split=4, max_depth=60)
         elif model_name.lower() == "extra":
-            # self.model = ExtraTreesRegressor(n_estimators=200,
-            #                                  criterion= "squared_error",  #{"squared_error", "absolute_error", "friedman_mse", "poisson"}
-            #                                  max_features=None,
-            #                                  min_samples_split=4,
-            #                                  max_depth=50,
-            #                                  n_jobs=N_JOBS,
-            #                                  )
-            self.model = ExtraTreesRegressor(n_estimators=193,
-                                             criterion= "squared_error",
+            self.model = ExtraTreesRegressor(n_estimators=200,
+                                             criterion= "squared_error",  #{"squared_error", "absolute_error", "friedman_mse", "poisson"}
                                              max_depth=65,
                                              max_features="sqrt",
                                              min_samples_split=4,
@@ -267,6 +260,7 @@ class Sklearn(ML):
         # plt.show()
         plt.close()
         return
+
 
     def hyper_param_tune(self):
         model = ExtraTreesRegressor()
