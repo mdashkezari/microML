@@ -15,7 +15,6 @@ man/
 spatial_pred/
 video/
 model_test*/
-spatial.py
 loss.py
 manuscriptFigures.py
 playground.py

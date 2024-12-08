@@ -94,10 +94,10 @@ if __name__ == "__main__":
                       target=target,
                       surface=surface,
                       holdout=holdout,
-                      test_size=0.2,
+                      test_size=0.01,
                       random_state=None
                       )
         # mml.model.linear_regression()
-        mml.model.ensemble(model_name="extra", plot_importance=True)
+        mml.model.ensemble(model_name="extra", plot_importance=False)
         # mml.model.fit()
         mml.model.save()

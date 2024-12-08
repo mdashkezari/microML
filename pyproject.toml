@@ -20,6 +20,7 @@ dependencies = [
     "cartopy",
     "pycmap",
     "torch",
+    "tensorflow",
     "scikit-learn",
     "tqdm",
     "colorama",
