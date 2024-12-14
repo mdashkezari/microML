@@ -94,7 +94,7 @@ if __name__ == "__main__":
                       target=target,
                       surface=surface,
                       holdout=holdout,
-                      test_size=0.01,
+                      test_size=0.2,
                       random_state=None
                       )
         # mml.model.linear_regression()

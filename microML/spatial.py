@@ -73,6 +73,7 @@ def cartopy_map(df, variable, title, fname=""):
     lat = df.lat.unique()
     lon = df.lon.unique()
     shape = (len(lat), len(lon))
+    print(fname)
     data = df[variable].values.reshape(shape)
     bound = bounds(variable)
 
@@ -289,13 +290,15 @@ def Pisces_calendar(api):
 def plot_spatial_estimates(dt, target, ind):
     print("*************** " + dt + " *************** \n")
     data_fname = "%s%s/%5.5d.csv" % (SPATIAL_PRED_DATA_DIR, target, ind)
-    df = global_X(target, dt, dt, res_x=0.5, res_y=0.5)
-    df = spatialEstimate(df, target, ind)
-    df.to_csv(data_fname, index=False)
+    if not os.path.isfile(data_fname):
+        df = global_X(target, dt, dt, res_x=0.5, res_y=0.5)
+        df = spatialEstimate(df, target, ind)
+        df.to_csv(data_fname, index=False)
 
     fig_fname = "%s%s/%5.5d.png" % (SPATIAL_PRED_FIG_DIR, target, ind)
-    df = pd.read_csv(data_fname)
-    cartopy_map(df, target, title=pretty_target(target)+" [cell/mL]\n"+dt, fname=fig_fname)
+    if not os.path.isfile(fig_fname):
+        df = pd.read_csv(data_fname)
+        cartopy_map(df, target, title=pretty_target(target)+" [cell/mL]\n"+dt, fname=fig_fname)
     return    
 
 
@@ -303,7 +306,7 @@ def plot_spatial_estimates(dt, target, ind):
 def main(api, targetIndex, vidFlag):
     targets = [PROC, SYNC, PICO, HETB]
     target = targets[targetIndex]
-    dts = Pisces_calendar(api)[:6]
+    dts = Pisces_calendar(api)[:]
     os.makedirs(SPATIAL_PRED_DIR, exist_ok=True)
     os.makedirs(SPATIAL_PRED_DATA_DIR, exist_ok=True)
     os.makedirs(SPATIAL_PRED_FIG_DIR, exist_ok=True)
