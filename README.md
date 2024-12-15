@@ -22,6 +22,8 @@ All measurements are then augmented with a large number of contemporaneous envir
 </br>
 
 <img src="media/proc.png" alt="proc" width="600"/>
+<img src="media/sync.png" alt="sync" width="600"/>
+<img src="media/pico.png" alt="pico" width="600"/>
 
 ## Installation:
 ```
