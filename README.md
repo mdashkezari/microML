@@ -13,7 +13,7 @@ This project compiles 4 decades of direct measurements of marine phytoplankton a
 </br>
 </br>
 
-All measurements are then augmented with a large number of contemporaneous environmental parameters such as temperature, salinity, nutrients, etc. Once data is processed, the ML model uses the environmental parameters (or a transformed version of them) to predict the organism abundances. Below, is an example of the model predictions for global distribution of Prochlorococcus. Predictions of other organisms, as well as time series videos for an 8-year period can be found at:
+All measurements are then augmented with a large number of contemporaneous environmental parameters such as temperature, salinity, nutrients, etc. Once data is processed, the ML model uses the environmental parameters (or a transformed version of them) to predict the organism abundances. Below, is an example of the model predictions for global distribution of Prochlorococcus. Model-generated video time series for an 8-year period can be found at:
 
 *  https://github.com/mdashkezari/microML/tree/main/media
 * https://threequarters.org/ml
